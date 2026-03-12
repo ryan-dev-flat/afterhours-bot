@@ -96,7 +96,16 @@ def _validate_twilio_request() -> bool:
         return True   # Dev mode — skip validation
     validator = RequestValidator(_twilio_token)
     signature = request.headers.get("X-Twilio-Signature", "")
-    url = request.url
+
+    # Railway (and most PaaS) terminate TLS at the load balancer, so
+    # request.url is http:// even though Twilio signed an https:// URL.
+    # Reconstruct the public HTTPS URL from forwarded headers.
+    forwarded_proto = request.headers.get("X-Forwarded-Proto", "")
+    if forwarded_proto == "https":
+        url = request.url.replace("http://", "https://", 1)
+    else:
+        url = request.url
+
     params = request.form.to_dict()
     return validator.validate(url, params, signature)
 

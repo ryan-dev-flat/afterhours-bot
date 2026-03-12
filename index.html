@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>After-Hours AI Lead Capture — Never Miss a Lead Again</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e1016; --panel: #161a26; --border: #232a3a;
+      --accent: #40c4ff; --green: #34d399; --amber: #fbbf24;
+      --white: #f0f2f8; --gray: #78809a;
+      --radius: 12px; --max-w: 1100px;
+    }
+    body { background: var(--bg); color: var(--white); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.65; }
+    a { color: inherit; text-decoration: none; }
+    img, video { max-width: 100%; display: block; }
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(14,16,22,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-size: 1rem; font-weight: 700; color: var(--accent); }
+    .nav-cta { background: var(--accent); color: #0e1016; padding: .45rem 1.25rem; border-radius: 6px; font-weight: 700; font-size: .85rem; }
+    .hero { text-align: center; padding: 100px 2rem 80px; background: radial-gradient(ellipse at top, #0d2035 0%, var(--bg) 65%); }
+    .badge { display: inline-block; background: rgba(64,196,255,.12); color: var(--accent); border: 1px solid rgba(64,196,255,.3); border-radius: 20px; padding: .25rem 1rem; font-size: .8rem; font-weight: 600; letter-spacing: .5px; margin-bottom: 1.5rem; }
+    .hero h1 { font-size: clamp(2rem,5vw,3.5rem); font-weight: 800; line-height: 1.15; max-width: 820px; margin: 0 auto 1.25rem; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { font-size: 1.15rem; color: var(--gray); max-width: 580px; margin: 0 auto 2rem; }
+    .btn-primary { display: inline-block; background: var(--accent); color: #0e1016; font-weight: 800; font-size: 1rem; padding: .85rem 2.5rem; border-radius: 8px; transition: opacity .15s; }
+    .btn-primary:hover { opacity: .88; }
+    .btn-secondary { display: inline-block; border: 1px solid var(--border); color: var(--gray); font-size: 1rem; padding: .85rem 2rem; border-radius: 8px; margin-left: 1rem; transition: border-color .15s, color .15s; }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .hero-sub { margin-top: 1.5rem; font-size: .82rem; color: var(--gray); }
+    .stats-bar { background: var(--panel); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.5rem 2rem; display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-val { font-size: 1.75rem; font-weight: 800; color: var(--accent); }
+    .stat-lbl { font-size: .78rem; color: var(--gray); margin-top: .15rem; }
+    section { padding: 80px 2rem; }
+    .container { max-width: var(--max-w); margin: 0 auto; }
+    .section-label { font-size: .78rem; font-weight: 700; letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase; margin-bottom: .75rem; }
+    .section-title { font-size: clamp(1.6rem,3vw,2.4rem); font-weight: 800; margin-bottom: 1rem; }
+    .section-sub { color: var(--gray); font-size: 1rem; max-width: 560px; }
+    .video-section { background: var(--panel); }
+    .video-wrap { margin: 2.5rem auto 0; max-width: 860px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); box-shadow: 0 24px 64px rgba(0,0,0,.5); }
+    .video-wrap video { width: 100%; display: block; }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .step { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+    .step-num { width: 42px; height: 42px; border-radius: 50%; background: rgba(64,196,255,.12); border: 1.5px solid var(--accent); color: var(--accent); font-weight: 800; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+    .step h3 { font-size: 1.1rem; margin-bottom: .5rem; }
+    .step p { color: var(--gray); font-size: .9rem; }
+    .pricing-section { background: var(--panel); }
+    .pricing-card { max-width: 480px; margin: 3rem auto 0; background: var(--bg); border: 1px solid var(--accent); border-radius: 16px; padding: 2.5rem; text-align: center; box-shadow: 0 0 48px rgba(64,196,255,.08); }
+    .pricing-badge { display: inline-block; background: rgba(251,191,36,.12); color: var(--amber); border: 1px solid rgba(251,191,36,.3); border-radius: 20px; padding: .2rem .9rem; font-size: .78rem; font-weight: 700; margin-bottom: 1rem; }
+    .price { font-size: 3rem; font-weight: 800; }
+    .price span { font-size: 1rem; color: var(--gray); font-weight: 400; }
+    .price-sub { color: var(--gray); font-size: .9rem; margin: .5rem 0 1.75rem; }
+    .features { list-style: none; text-align: left; margin-bottom: 2rem; }
+    .features li { padding: .5rem 0; font-size: .95rem; border-bottom: 1px solid var(--border); display: flex; gap: .65rem; }
+    .features li::before { content: "✓"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .faq { display: flex; flex-direction: column; gap: 1rem; margin-top: 2.5rem; max-width: 700px; }
+    .faq-item { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; }
+    .faq-item h4 { font-size: 1rem; margin-bottom: .4rem; }
+    .faq-item p { color: var(--gray); font-size: .9rem; }
+    .cta-section { background: radial-gradient(ellipse at center, #0d2035 0%, var(--bg) 70%); text-align: center; border-top: 1px solid var(--border); }
+    .cta-section h2 { font-size: clamp(1.8rem,4vw,2.8rem); font-weight: 800; margin-bottom: 1rem; }
+    .cta-section > .container > p { color: var(--gray); max-width: 480px; margin: 0 auto 2rem; }
+    .contact-form { display: flex; flex-direction: column; gap: 1rem; max-width: 440px; margin: 2rem auto 0; text-align: left; }
+    .contact-form input, .contact-form select, .contact-form textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--white); padding: .75rem 1rem; font-size: .95rem; font-family: inherit; width: 100%; outline: none; transition: border-color .15s; }
+    .contact-form input:focus, .contact-form select:focus, .contact-form textarea:focus { border-color: var(--accent); }
+    .contact-form textarea { resize: vertical; min-height: 90px; }
+    .contact-form select option { background: #161a26; }
+    .contact-form button { background: var(--accent); color: #0e1016; border: none; padding: .9rem; border-radius: 8px; font-weight: 800; font-size: 1rem; cursor: pointer; transition: opacity .15s; width: 100%; }
+    .contact-form button:hover { opacity: .88; }
+    .form-note { text-align: center; font-size: .78rem; color: var(--gray); margin-top: .25rem; }
+    footer { background: var(--panel); border-top: 1px solid var(--border); text-align: center; padding: 2rem; font-size: .82rem; color: var(--gray); }
+    @media (max-width: 640px) { .btn-secondary { margin-left: 0; margin-top: .75rem; display: block; } .stats-bar { gap: 1.5rem; } .nav-cta { display: none; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">⚡ AfterHours AI</span>
+  <a href="#contact" class="nav-cta">Get Started</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">🤖 AI-Powered Lead Capture</div>
+  <h1>Stop losing jobs to your competitors<br><span>after hours.</span></h1>
+  <p>Your AI bot answers instantly, qualifies leads, and texts you — even at 2am. No staff. No missed jobs.</p>
+  <a href="#contact" class="btn-primary">Get This For My Business</a>
+  <a href="#demo" class="btn-secondary">Watch Demo ↓</a>
+  <p class="hero-sub">Setup in &lt;1 hour &nbsp;·&nbsp; No contracts &nbsp;·&nbsp; Cancel anytime</p>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-val">24/7</div><div class="stat-lbl">Always Answering</div></div>
+  <div class="stat"><div class="stat-val">&lt;3s</div><div class="stat-lbl">Response Time</div></div>
+  <div class="stat"><div class="stat-val">100%</div><div class="stat-lbl">Leads Captured</div></div>
+  <div class="stat"><div class="stat-val">$0</div><div class="stat-lbl">Staff Cost</div></div>
+</div>
+
+<!-- DEMO VIDEO -->
+<section class="video-section" id="demo">
+  <div class="container">
+    <div class="section-label">Live Demo</div>
+    <div class="section-title">Watch it qualify a real lead</div>
+    <p class="section-sub">A customer texts at 9pm. The bot greets them, captures their info, and notifies the owner — all in under 60 seconds.</p>
+    <div class="video-wrap">
+      <video controls playsinline>
+        <source src="demo_video.mp4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="section-label">How It Works</div>
+    <div class="section-title">Simple for you. Seamless for customers.</div>
+    <p class="section-sub">No app to download. No training required. It just works.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Customer texts after hours</h3>
+        <p>They reach your WhatsApp or business number like normal. The AI picks up instantly — no hold music, no voicemail.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Bot qualifies the lead</h3>
+        <p>Asks the right questions, routes emergencies to your on-call line, and never gives away price quotes without context.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>You get notified instantly</h3>
+        <p>A text lands on your phone with the lead's name, service needed, callback number, and preferred appointment time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <div class="section-label">Pricing</div>
+    <div class="section-title">Costs less than one missed job.</div>
+    <p class="section-sub">A single lost lead is worth more than a month of this service. We keep it simple.</p>
+    <div class="pricing-card">
+      <div class="pricing-badge">Most Popular</div>
+      <div class="price">$400<span> / month</span></div>
+      <p class="price-sub">Per business location. Scales to $600/mo for multi-location or high-volume.</p>
+      <ul class="features">
+        <li>24/7 AI-powered WhatsApp bot</li>
+        <li>Instant lead qualification &amp; capture</li>
+        <li>Emergency routing to your on-call number</li>
+        <li>Real-time owner notifications via text</li>
+        <li>Fully customized to your business</li>
+        <li>Setup in under 1 hour</li>
+        <li>No long-term contract</li>
+      </ul>
+      <a href="#contact" class="btn-primary" style="display:block; text-align:center;">Get Started Today</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-label">FAQ</div>
+    <div class="section-title">Common questions</div>
+    <div class="faq">
+      <div class="faq-item">
+        <h4>What businesses does this work for?</h4>
+        <p>Any local service business that gets inbound calls or texts — plumbers, HVAC, electricians, dentists, gyms, contractors. If you lose leads after hours, this solves it.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Does the customer know they're talking to a bot?</h4>
+        <p>The bot is transparent — it introduces itself as an AI assistant. Customers appreciate an instant response far more than hitting voicemail at 10pm.</p>
+      </div>
+      <div class="faq-item">
+        <h4>What if there's an emergency?</h4>
+        <p>The bot detects urgent situations (burst pipe, no heat in winter, etc.) and immediately provides your emergency line number, then logs the contact as a priority lead.</p>
+      </div>
+      <div class="faq-item">
+        <h4>How long does setup take?</h4>
+        <p>Under 1 hour. I collect your business details, configure the bot, connect it to your WhatsApp number, and hand you a live system — same day.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Can I cancel anytime?</h4>
+        <p>Yes. No contracts, no cancellation fees. Month-to-month. That said, most clients see ROI within the first week.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA + CONTACT -->
+<section class="cta-section" id="contact">
+  <div class="container">
+    <h2>Ready to stop losing leads?</h2>
+    <p>Drop your info below and I'll reach out within a few hours to walk you through setup.</p>
+    <form class="contact-form" onsubmit="handleSubmit(event)">
+      <input type="text" name="name" placeholder="Your name" required>
+      <input type="text" name="business" placeholder="Business name" required>
+      <select name="type" required>
+        <option value="" disabled selected>Type of business</option>
+        <option>Plumbing</option>
+        <option>HVAC</option>
+        <option>Electrical</option>
+        <option>Dental / Medical</option>
+        <option>Gym / Fitness</option>
+        <option>General Contracting</option>
+        <option>Cleaning Services</option>
+        <option>Other</option>
+      </select>
+      <input type="tel" name="phone" placeholder="Your phone number" required>
+      <textarea name="message" placeholder="Anything else? (optional)"></textarea>
+      <button type="submit">Send My Info →</button>
+      <p class="form-note">No spam. I'll reply via text or call within a few hours.</p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <p>⚡ AfterHours AI &nbsp;·&nbsp; AI-powered lead capture for local service businesses</p>
+  <p style="margin-top:.5rem;">Built with Claude AI &nbsp;·&nbsp; Powered by WhatsApp</p>
+</footer>
+
+<script>
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    btn.textContent = "✓ Got it! I'll be in touch soon.";
+    btn.style.background = 'var(--green)';
+    btn.disabled = true;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "Summit Home Services",
+  "type": "plumbing and HVAC",
+  "location": "Denver, CO",
+  "owner_name": "Mike",
+  "owner_notify_number": "+17205779547",
+  "services": [
+    "plumbing repairs",
+    "drain cleaning",
+    "water heater installation",
+    "HVAC maintenance",
+    "furnace repair",
+    "AC installation",
+    "leak detection"
+  ],
+  "hours": "Monday-Friday 8am-5pm, Saturday 9am-2pm",
+  "closed_days": ["Sunday"],
+  "service_area": "Denver metro including Aurora, Littleton, Englewood, and Lakewood",
+  "emergency_line": "(720) 555-0123",
+  "booking_lead_time": "Same day or next day for most repairs",
+  "free_estimate": true,
+  "emergency_keywords": ["flood", "flooding", "gas leak", "no heat", "burst pipe", "sewage", "overflow", "emergency"]
+}

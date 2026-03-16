@@ -55,3 +55,4 @@ python test_bot.py
 ## Strategy Docs
 
 - Summary: [`docs/saas-strategy-summary.md`](docs/saas-strategy-summary.md)
+- Client setup workflow: [`docs/client-onboarding-workflow.md`](docs/client-onboarding-workflow.md)

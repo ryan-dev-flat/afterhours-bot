@@ -74,6 +74,7 @@ class AfterHoursBot:
     def __init__(
         self,
         config_path: Optional[str] = None,
+        config: Optional[dict] = None,
         notify_fn: Optional[Callable[[dict, dict], None]] = None,
     ):
         api_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -83,7 +84,11 @@ class AfterHoursBot:
                 "Export it before running the bot."
             )
         self.client = anthropic.Anthropic(api_key=api_key)
-        self.business = load_business(config_path)
+        # Accept a pre-loaded config dict (multi-tenant) or fall back to file
+        if config is not None:
+            self.business = config
+        else:
+            self.business = load_business(config_path)
         self.system_prompt = build_system_prompt(self.business)
         self.history: list[dict] = []
         self.lead: Optional[dict] = None

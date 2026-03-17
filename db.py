@@ -98,6 +98,38 @@ def update_account_status(account_id: str, status: str) -> None:
             )
 
 
+def get_account_id_by_company(company_name: str) -> Optional[str]:
+    """Return the most recent account UUID matching company_name, or None."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id FROM accounts
+                WHERE company_name = %s
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                (company_name,),
+            )
+            row = cur.fetchone()
+            return str(row[0]) if row else None
+
+
+def update_account_owner_phone(account_id: str, owner_phone: str) -> None:
+    """Update the owner_phone on an account record."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE accounts SET owner_phone = %s WHERE id = %s",
+                (owner_phone, account_id),
+            )
+
+
+def set_business_profile(account_id: str, config: Dict[str, Any]) -> None:
+    """Alias for store_business_profile — used by onboarding flow."""
+    store_business_profile(account_id, config)
+
+
 # ── Business Profiles ────────────────────────────────────────────────────────
 
 def store_business_profile(account_id: str, config: Dict[str, Any]) -> None:

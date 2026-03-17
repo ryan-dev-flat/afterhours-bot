@@ -22,6 +22,13 @@ Single-tenant only:
 Optional:
   DATABASE_URL            - Postgres connection string (enables multi-tenant mode)
   PORT                    - HTTP port to listen on (default: 5000)
+
+Stripe (optional — enables /start, /checkout, /stripe-webhook, /onboard):
+  STRIPE_SECRET_KEY       - From Stripe dashboard
+  STRIPE_WEBHOOK_SECRET   - From Stripe webhook endpoint settings
+  STRIPE_PRICE_ID         - Price ID for the $149/month plan
+  APP_BASE_URL            - Public URL of this app
+  FOUNDER_WHATSAPP_NUMBER - Your WhatsApp number for new-client alerts
 """
 
 import logging
@@ -42,6 +49,12 @@ logger = logging.getLogger(__name__)
 
 # ── App setup ─────────────────────────────────────────────────────────────────
 app = Flask(__name__)
+
+# ── Stripe Blueprint (registers /start, /checkout, /stripe-webhook, /onboard) ─
+if os.environ.get("STRIPE_SECRET_KEY"):
+    from stripe_routes import stripe_bp
+    app.register_blueprint(stripe_bp)
+    logger.info("Stripe routes registered")
 
 # ── Multi-tenant mode detection ───────────────────────────────────────────────
 _multi_tenant = bool(os.environ.get("DATABASE_URL"))

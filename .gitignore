@@ -4,3 +4,5 @@ __pycache__/
 preview_*.png
 .env.local
 
+
+.vscode/

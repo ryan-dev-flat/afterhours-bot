@@ -24,7 +24,11 @@ stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 _webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
 _price_id = os.environ.get("STRIPE_PRICE_ID")          # $149/month recurring
 _setup_price_id = os.environ.get("STRIPE_SETUP_PRICE_ID")  # $199 one-time setup
-_base_url = os.environ.get("APP_BASE_URL", "http://localhost:5000")
+
+
+def _get_base_url():
+    """Read at request time so Railway env vars are always picked up."""
+    return os.environ.get("APP_BASE_URL", "http://localhost:5000").rstrip("/")
 
 stripe_bp = Blueprint("stripe", __name__)
 
@@ -84,6 +88,9 @@ def checkout():
     if _setup_price_id:
         line_items.insert(0, {"price": _setup_price_id, "quantity": 1})
 
+    base_url = _get_base_url()
+    logger.info("Using base_url=%r for checkout session", base_url)
+
     try:
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -94,8 +101,8 @@ def checkout():
                 "owner_name":   owner_name,
                 "company_name": company_name,
             },
-            success_url=f"{_base_url}/onboard?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{_base_url}/start",
+            success_url=f"{base_url}/onboard?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{base_url}/start",
         )
     except stripe.error.StripeError as e:
         logger.error("Stripe API error: %s", e.user_message or str(e))

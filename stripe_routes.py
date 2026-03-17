@@ -79,16 +79,12 @@ def checkout():
     if not all([owner_name, company_name, email]):
         return jsonify({"error": "All fields are required"}), 400
 
-    # Build line items — always include $149/month, add $199 setup if configured
-    line_items = [{"price": _price_id, "quantity": 1}]
-    if _setup_price_id:
-        line_items.insert(0, {"price": _setup_price_id, "quantity": 1})
-
-    session = stripe.checkout.Session.create(
+    # In subscription mode, one-time fees must go in add_invoice_items
+    session_kwargs = dict(
         payment_method_types=["card"],
         mode="subscription",
         customer_email=email,
-        line_items=line_items,
+        line_items=[{"price": _price_id, "quantity": 1}],
         metadata={
             "owner_name":   owner_name,
             "company_name": company_name,
@@ -96,6 +92,10 @@ def checkout():
         success_url=f"{_base_url}/onboard?session_id={{CHECKOUT_SESSION_ID}}",
         cancel_url=f"{_base_url}/start",
     )
+    if _setup_price_id:
+        session_kwargs["add_invoice_items"] = [{"price": _setup_price_id, "quantity": 1}]
+
+    session = stripe.checkout.Session.create(**session_kwargs)
     return redirect(session.url, code=303)
 
 

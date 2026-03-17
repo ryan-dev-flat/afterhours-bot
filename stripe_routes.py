@@ -79,24 +79,24 @@ def checkout():
     if not all([owner_name, company_name, email]):
         return jsonify({"error": "All fields are required"}), 400
 
-    # In subscription mode, one-time fees must go in add_invoice_items
-    session_kwargs = dict(
-        payment_method_types=["card"],
-        mode="subscription",
-        customer_email=email,
-        line_items=[{"price": _price_id, "quantity": 1}],
-        metadata={
-            "owner_name":   owner_name,
-            "company_name": company_name,
-        },
-        success_url=f"{_base_url}/onboard?session_id={{CHECKOUT_SESSION_ID}}",
-        cancel_url=f"{_base_url}/start",
-    )
+    # Build line items — recurring $149/month + optional one-time $199 setup
+    line_items = [{"price": _price_id, "quantity": 1}]
     if _setup_price_id:
-        session_kwargs["add_invoice_items"] = [{"price": _setup_price_id, "quantity": 1}]
+        line_items.insert(0, {"price": _setup_price_id, "quantity": 1})
 
     try:
-        session = stripe.checkout.Session.create(**session_kwargs)
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            mode="subscription",
+            customer_email=email,
+            line_items=line_items,
+            metadata={
+                "owner_name":   owner_name,
+                "company_name": company_name,
+            },
+            success_url=f"{_base_url}/onboard?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{_base_url}/start",
+        )
     except stripe.error.StripeError as e:
         logger.error("Stripe API error: %s", e.user_message or str(e))
         return jsonify({"error": str(e.user_message or e)}), 500

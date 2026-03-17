@@ -95,7 +95,12 @@ def checkout():
     if _setup_price_id:
         session_kwargs["add_invoice_items"] = [{"price": _setup_price_id, "quantity": 1}]
 
-    session = stripe.checkout.Session.create(**session_kwargs)
+    try:
+        session = stripe.checkout.Session.create(**session_kwargs)
+    except stripe.error.StripeError as e:
+        logger.error("Stripe API error: %s", e.user_message or str(e))
+        return jsonify({"error": str(e.user_message or e)}), 500
+
     return redirect(session.url, code=303)
 
 

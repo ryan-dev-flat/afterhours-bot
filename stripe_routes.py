@@ -4,7 +4,8 @@ Stripe Checkout and webhook routes.
 Environment variables required:
   STRIPE_SECRET_KEY       - From Stripe dashboard (sk_live_... or sk_test_...)
   STRIPE_WEBHOOK_SECRET   - From Stripe webhook endpoint settings (whsec_...)
-  STRIPE_PRICE_ID         - Price ID for the $149/month plan (price_...)
+  STRIPE_PRICE_ID         - Price ID for the $149/month recurring plan (price_...)
+  STRIPE_SETUP_PRICE_ID   - Price ID for the $199 one-time setup fee (price_...)
   APP_BASE_URL            - Public URL of this app (e.g. https://afterhours-bot-production-f37a.up.railway.app)
 
 Optional (for founder notifications):
@@ -21,7 +22,8 @@ logger = logging.getLogger(__name__)
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 _webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
-_price_id = os.environ.get("STRIPE_PRICE_ID")
+_price_id = os.environ.get("STRIPE_PRICE_ID")          # $149/month recurring
+_setup_price_id = os.environ.get("STRIPE_SETUP_PRICE_ID")  # $199 one-time setup
 _base_url = os.environ.get("APP_BASE_URL", "http://localhost:5000")
 
 stripe_bp = Blueprint("stripe", __name__)
@@ -77,11 +79,16 @@ def checkout():
     if not all([owner_name, company_name, email]):
         return jsonify({"error": "All fields are required"}), 400
 
+    # Build line items — always include $149/month, add $199 setup if configured
+    line_items = [{"price": _price_id, "quantity": 1}]
+    if _setup_price_id:
+        line_items.insert(0, {"price": _setup_price_id, "quantity": 1})
+
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
         mode="subscription",
         customer_email=email,
-        line_items=[{"price": _price_id, "quantity": 1}],
+        line_items=line_items,
         metadata={
             "owner_name":   owner_name,
             "company_name": company_name,

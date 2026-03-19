@@ -56,6 +56,12 @@ if os.environ.get("STRIPE_SECRET_KEY"):
     app.register_blueprint(stripe_bp)
     logger.info("Stripe routes registered")
 
+# ── Admin Blueprint (registers /admin/*) ──────────────────────────────────────
+if os.environ.get("ADMIN_SECRET"):
+    from admin_routes import admin_bp
+    app.register_blueprint(admin_bp)
+    logger.info("Admin routes registered")
+
 # ── Multi-tenant mode detection ───────────────────────────────────────────────
 _multi_tenant = bool(os.environ.get("DATABASE_URL"))
 if _multi_tenant:

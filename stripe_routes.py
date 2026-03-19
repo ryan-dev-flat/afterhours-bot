@@ -190,6 +190,41 @@ def _notify_founder(company_name, owner_name, email, account_id):
         logger.info("FOUNDER ALERT (WhatsApp not configured):\n%s", msg)
 
 
+def _send_owner_confirmation(owner_phone, business_name):
+    """Send a WhatsApp/SMS confirmation to the new client after onboarding."""
+    twilio_number = os.environ.get("TWILIO_WHATSAPP_NUMBER")
+    twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+    twilio_token = os.environ.get("TWILIO_AUTH_TOKEN")
+
+    if not owner_phone or not all([twilio_sid, twilio_token, twilio_number]):
+        logger.info("Skipping owner confirmation (missing config or phone)")
+        return
+
+    # Normalize phone — if user gave plain number, try WhatsApp first
+    to_number = owner_phone.strip()
+    if not to_number.startswith("whatsapp:"):
+        to_number = "whatsapp:" + to_number
+
+    msg = (
+        f"Hi! Thanks for signing up {business_name} with AfterHours Bot.\n\n"
+        f"We received your business details and will have your AI receptionist "
+        f"live within 24 hours.\n\n"
+        f"We'll message you here when your number is active. "
+        f"Reply anytime if you have questions!"
+    )
+
+    try:
+        from twilio.rest import Client as TwilioClient
+        TwilioClient(twilio_sid, twilio_token).messages.create(
+            from_=twilio_number,
+            to=to_number,
+            body=msg,
+        )
+        logger.info("Confirmation sent to owner %s", owner_phone)
+    except Exception as e:
+        logger.error("Failed to send owner confirmation: %s", e)
+
+
 # ── GET /onboard — post-payment business details form ─────────────────────────
 @stripe_bp.route("/onboard", methods=["GET"])
 def onboard_form():
@@ -295,6 +330,9 @@ def onboard_submit():
             logger.info("Onboarding profile saved for account %s", account_id)
     except Exception as e:
         logger.error("Failed to save onboarding profile: %s", e)
+
+    # Send confirmation WhatsApp/SMS to owner
+    _send_owner_confirmation(owner_phone, business_name)
 
     return """
     <!DOCTYPE html>

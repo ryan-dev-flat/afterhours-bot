@@ -239,3 +239,39 @@ def get_leads(account_id: str, limit: int = 50) -> List[Dict[str, Any]]:
             )
             return [dict(row) for row in cur.fetchall()]
 
+
+
+# ── Admin queries ─────────────────────────────────────────────────────────────
+
+def list_accounts() -> List[Dict[str, Any]]:
+    """Return all accounts ordered by created_at desc."""
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT * FROM accounts ORDER BY created_at DESC")
+            return [dict(row) for row in cur.fetchall()]
+
+
+def list_channels(account_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Return channels, optionally filtered by account_id."""
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            if account_id:
+                cur.execute(
+                    "SELECT * FROM channels WHERE account_id = %s ORDER BY created_at DESC",
+                    (account_id,),
+                )
+            else:
+                cur.execute("SELECT * FROM channels ORDER BY created_at DESC")
+            return [dict(row) for row in cur.fetchall()]
+
+
+def get_account_by_stripe_customer(stripe_customer_id: str) -> Optional[Dict[str, Any]]:
+    """Look up account by Stripe customer ID."""
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                "SELECT * FROM accounts WHERE stripe_customer_id = %s",
+                (stripe_customer_id,),
+            )
+            row = cur.fetchone()
+            return dict(row) if row else None

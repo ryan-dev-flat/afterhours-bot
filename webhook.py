@@ -48,7 +48,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ── App setup ─────────────────────────────────────────────────────────────────
-app = Flask(__name__)
+app = Flask(__name__, static_folder=".", static_url_path="/static")
+
+
+# ── Landing page ──────────────────────────────────────────────────────────────
+@app.route("/")
+def landing():
+    return app.send_static_file("index.html")
 
 # ── Stripe Blueprint (registers /start, /checkout, /stripe-webhook, /onboard) ─
 if os.environ.get("STRIPE_SECRET_KEY"):

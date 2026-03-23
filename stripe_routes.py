@@ -190,21 +190,18 @@ def _notify_founder(company_name, owner_name, email, account_id):
         logger.info("FOUNDER ALERT (WhatsApp not configured):\n%s", msg)
 
 
-def _send_owner_confirmation(owner_phone, business_name):
-    """Send a WhatsApp/SMS confirmation to the new client after onboarding."""
-    twilio_number = os.environ.get("TWILIO_WHATSAPP_NUMBER")
+def _send_owner_confirmation(owner_phone, business_name, contact_pref="sms"):
+    """Send a confirmation to the new client after onboarding via SMS, WhatsApp, or both."""
     twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID")
     twilio_token = os.environ.get("TWILIO_AUTH_TOKEN")
+    twilio_sms_number = os.environ.get("TWILIO_PHONE_NUMBER")       # regular SMS number
+    twilio_wa_number = os.environ.get("TWILIO_WHATSAPP_NUMBER")     # whatsapp:+1...
 
-    if not owner_phone or not all([twilio_sid, twilio_token, twilio_number]):
+    if not owner_phone or not all([twilio_sid, twilio_token]):
         logger.info("Skipping owner confirmation (missing config or phone)")
         return
 
-    # Normalize phone — if user gave plain number, try WhatsApp first
-    to_number = owner_phone.strip()
-    if not to_number.startswith("whatsapp:"):
-        to_number = "whatsapp:" + to_number
-
+    phone = owner_phone.strip()
     msg = (
         f"Hi! Thanks for signing up {business_name} with AfterHours Bot.\n\n"
         f"We received your business details and will have your AI receptionist "
@@ -213,16 +210,32 @@ def _send_owner_confirmation(owner_phone, business_name):
         f"Reply anytime if you have questions!"
     )
 
-    try:
-        from twilio.rest import Client as TwilioClient
-        TwilioClient(twilio_sid, twilio_token).messages.create(
-            from_=twilio_number,
-            to=to_number,
-            body=msg,
-        )
-        logger.info("Confirmation sent to owner %s", owner_phone)
-    except Exception as e:
-        logger.error("Failed to send owner confirmation: %s", e)
+    from twilio.rest import Client as TwilioClient
+    client = TwilioClient(twilio_sid, twilio_token)
+
+    # Send SMS
+    if contact_pref in ("sms", "both"):
+        if twilio_sms_number:
+            try:
+                sms_to = phone.replace("whatsapp:", "")  # strip prefix if present
+                client.messages.create(from_=twilio_sms_number, to=sms_to, body=msg)
+                logger.info("SMS confirmation sent to %s", sms_to)
+            except Exception as e:
+                logger.error("Failed to send SMS confirmation: %s", e)
+        else:
+            logger.info("Skipping SMS (TWILIO_PHONE_NUMBER not set)")
+
+    # Send WhatsApp
+    if contact_pref in ("whatsapp", "both"):
+        if twilio_wa_number:
+            try:
+                wa_to = phone if phone.startswith("whatsapp:") else "whatsapp:" + phone
+                client.messages.create(from_=twilio_wa_number, to=wa_to, body=msg)
+                logger.info("WhatsApp confirmation sent to %s", wa_to)
+            except Exception as e:
+                logger.error("Failed to send WhatsApp confirmation: %s", e)
+        else:
+            logger.info("Skipping WhatsApp (TWILIO_WHATSAPP_NUMBER not set)")
 
 
 # ── GET /onboard — post-payment business details form ─────────────────────────
@@ -266,8 +279,15 @@ def onboard_form():
         <label>Your name (owner)</label>
         <input name="owner_name" placeholder="Mike" required>
 
-        <label>Your WhatsApp number (for lead alerts)</label>
+        <label>Your phone number (for lead alerts)</label>
         <input name="owner_phone" type="tel" placeholder="+17205550000" required>
+
+        <label>How should we contact you?</label>
+        <select name="contact_pref">
+          <option value="sms">SMS / Text</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="both">Both</option>
+        </select>
 
         <label>Business hours</label>
         <input name="hours" placeholder="Mon-Fri 8am-5pm, Sat 9am-2pm" required>
@@ -281,7 +301,7 @@ def onboard_form():
         <label>Emergency keywords (comma-separated, optional)</label>
         <input name="emergency_keywords" placeholder="flood, gas leak, burst pipe, no heat">
 
-        <p class="note">We'll review your details and text you within 24 hours once your WhatsApp number is active.</p>
+        <p class="note">We'll review your details and contact you within 24 hours once your AI receptionist is active.</p>
         <button type="submit">Submit →</button>
       </form>
     </body>
@@ -331,8 +351,9 @@ def onboard_submit():
     except Exception as e:
         logger.error("Failed to save onboarding profile: %s", e)
 
-    # Send confirmation WhatsApp/SMS to owner
-    _send_owner_confirmation(owner_phone, business_name)
+    # Send confirmation via preferred channel
+    contact_pref = request.form.get("contact_pref", "sms").strip()
+    _send_owner_confirmation(owner_phone, business_name, contact_pref)
 
     return """
     <!DOCTYPE html>

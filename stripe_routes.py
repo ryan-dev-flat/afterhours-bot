@@ -10,6 +10,10 @@ Environment variables required:
 
 Optional (for founder notifications):
   FOUNDER_WHATSAPP_NUMBER - Your personal WhatsApp number (whatsapp:+1...)
+
+Optional (for email confirmations):
+  SENDGRID_API_KEY        - From SendGrid dashboard
+  SENDGRID_FROM_EMAIL     - Verified sender email (e.g. hello@afterhoursai.com)
 """
 
 import logging
@@ -238,6 +242,58 @@ def _send_owner_confirmation(owner_phone, business_name, contact_pref="sms"):
             logger.info("Skipping WhatsApp (TWILIO_WHATSAPP_NUMBER not set)")
 
 
+def _send_confirmation_email(to_email, business_name):
+    """Send a confirmation email after onboarding via SendGrid."""
+    api_key = os.environ.get("SENDGRID_API_KEY")
+    from_email = os.environ.get("SENDGRID_FROM_EMAIL", "hello@afterhoursai.com")
+
+    if not api_key or not to_email:
+        logger.info("Skipping email confirmation (SENDGRID_API_KEY not set or no email)")
+        return
+
+    import urllib.request
+    import json
+
+    data = {
+        "personalizations": [{"to": [{"email": to_email}]}],
+        "from": {"email": from_email, "name": "AfterHours AI"},
+        "subject": f"Welcome to AfterHours AI, {business_name}!",
+        "content": [{
+            "type": "text/html",
+            "value": (
+                f"<h2>Welcome aboard, {business_name}! 🎉</h2>"
+                f"<p>Thanks for signing up with AfterHours AI.</p>"
+                f"<p>We received your business details and will have your "
+                f"AI receptionist live within <strong>24 hours</strong>.</p>"
+                f"<p>Here's what happens next:</p>"
+                f"<ol>"
+                f"<li>We configure your AI bot with your business details</li>"
+                f"<li>We assign a dedicated phone number for your business</li>"
+                f"<li>We send you a test message to confirm everything works</li>"
+                f"</ol>"
+                f"<p>Questions? Just reply to this email.</p>"
+                f"<p>— The AfterHours AI Team</p>"
+            ),
+        }],
+    }
+
+    req = urllib.request.Request(
+        "https://api.sendgrid.com/v3/mail/send",
+        data=json.dumps(data).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        urllib.request.urlopen(req)
+        logger.info("Confirmation email sent to %s", to_email)
+    except Exception as e:
+        logger.error("Failed to send confirmation email: %s", e)
+
+
 # ── GET /onboard — post-payment business details form ─────────────────────────
 @stripe_bp.route("/onboard", methods=["GET"])
 def onboard_form():
@@ -339,6 +395,7 @@ def onboard_submit():
     }
 
     # Look up account by Stripe session — match on company name (best we have without DB session storage)
+    owner_email = None
     try:
         import db
         # Find the newest onboarding account with this business name
@@ -348,12 +405,19 @@ def onboard_submit():
             # Update owner phone on account record too
             db.update_account_owner_phone(account_id, owner_phone)
             logger.info("Onboarding profile saved for account %s", account_id)
+            # Grab email for confirmation
+            account = db.get_account(account_id)
+            if account:
+                owner_email = account.get("owner_email")
     except Exception as e:
         logger.error("Failed to save onboarding profile: %s", e)
 
-    # Send confirmation via preferred channel
+    # Send confirmation via preferred channel (SMS / WhatsApp)
     contact_pref = request.form.get("contact_pref", "sms").strip()
     _send_owner_confirmation(owner_phone, business_name, contact_pref)
+
+    # Send confirmation email
+    _send_confirmation_email(owner_email, business_name)
 
     return """
     <!DOCTYPE html>
@@ -369,8 +433,8 @@ def onboard_submit():
     <body>
       <h1>✅ You're all set!</h1>
       <p>We received your business details and will have your AI receptionist live within 24 hours.</p>
-      <p>We'll send you a WhatsApp message once your number is active.</p>
-      <p style="margin-top:40px; color:#999; font-size:.9rem;">Questions? Reply to any of our messages.</p>
+      <p>We'll send you a confirmation via text and email. We'll also notify you once your number is active.</p>
+      <p style="margin-top:40px; color:#999; font-size:.9rem;">Questions? Reply to any of our messages or email us.</p>
     </body>
     </html>
     """, 200
